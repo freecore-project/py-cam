@@ -56,8 +56,20 @@ cdef extern from "dev/nvme/nvme.h" nogil:
 
     struct nvme_command:
         uint8_t opc
+        uint8_t fuse
+        uint16_t cid
+        uint32_t nsid
+        uint32_t rsvd2
+        uint32_t rsvd3
+        uint64_t mptr
+        uint64_t prp1
+        uint64_t prp2
         uint32_t cdw10
         uint32_t cdw11
+        uint32_t cdw12
+        uint32_t cdw13
+        uint32_t cdw14
+        uint32_t cdw15
 
     struct nvme_completion:
         uint32_t cdw0
@@ -73,6 +85,7 @@ cdef extern from "dev/nvme/nvme.h" nogil:
         void * buf
         uint32_t len
         uint32_t is_read
+        void * driver_lock
 
     struct nvme_resv_reg_ctrlr:
         uint16_t ctrlr_id

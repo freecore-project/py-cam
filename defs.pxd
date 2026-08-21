@@ -77,6 +77,22 @@ cdef extern from "camlib.h" nogil:
 
 cdef extern from "cam/ata/ata_all.h" nogil:
 
+    cdef struct ata_cmd:
+        uint8_t flags
+        uint8_t command
+        uint8_t features
+        uint8_t lba_low
+        uint8_t lba_mid
+        uint8_t lba_high
+        uint8_t device
+        uint8_t lba_low_exp
+        uint8_t lba_mid_exp
+        uint8_t lba_high_exp
+        uint8_t features_exp
+        uint8_t sector_count
+        uint8_t sector_count_exp
+        uint8_t control
+
     cdef struct ata_res:
         uint8_t flags
         uint8_t status
@@ -117,11 +133,16 @@ cdef extern from "cam/cam_ccb.h" nogil:
 
     cdef struct ccb_ataio:
         ccb_hdr ccb_h
+        void *next_ccb
+        ata_cmd cmd
         ata_res res
         uint8_t *data_ptr
         uint32_t dxfer_len
         uint32_t resid
         uint8_t ata_flags
+        uint8_t icc
+        uint32_t aux
+        uint32_t unused
 
     cdef union ccb:
         ccb_hdr ccb_h
@@ -823,21 +844,10 @@ cdef extern from "cam/ctl/ctl_ioctl.h":
         CTL_IO
         CTL_ENABLE_PORT
         CTL_DISABLE_PORT
-        CTL_DUMP_OOA
-        CTL_CHECK_OOA
-        CTL_HARD_STOP
-        CTL_HARD_START
         CTL_DELAY_IO
-        CTL_REALSYNC_GET
-        CTL_REALSYNC_SET
-        CTL_SETSYNC
-        CTL_GETSYNC
-        CTL_GETSTATS
         CTL_ERROR_INJECT
-        CTL_BBRREAD
         CTL_GET_OOA
         CTL_DUMP_STRUCTS
-        CTL_GET_PORT_LIST
         CTL_LUN_REQ
         CTL_LUN_LIST
         CTL_ERROR_INJECT_DELETE
@@ -845,7 +855,7 @@ cdef extern from "cam/ctl/ctl_ioctl.h":
         CTL_ISCSI
         CTL_PORT_REQ
         CTL_PORT_LIST
-        CTL_LUN_MAP            
+        CTL_LUN_MAP
 
     ctypedef enum ctl_iscsi_status:
         CTL_ISCSI_OK
@@ -1014,8 +1024,12 @@ cdef extern from "dev/iscsi/iscsi_ioctl.h":
         int isc_discovery
         int isc_header_digest
         int isc_data_digest
+        int isc_iser
+        char isc_offload[ISCSI_OFFLOAD_LEN]
         int isc_enable
-        int isc_spare[1]
+        int isc_dscp
+        int isc_pcp
+        int isc_spare[2]
 
     cdef struct iscsi_session_state:
         iscsi_session_conf iss_conf
@@ -1023,12 +1037,15 @@ cdef extern from "dev/iscsi/iscsi_ioctl.h":
         char iss_target_alias[ISCSI_ALIAS_LEN]
         int iss_header_digest
         int iss_data_digest
-        int iss_max_data_segment_length
+        int iss_max_recv_data_segment_length
+        int iss_max_burst_length
+        int iss_first_burst_length
         int iss_immediate_data
         int iss_connected
         char iss_reason[ISCSI_REASON_LEN]
         char iss_offload[ISCSI_OFFLOAD_LEN]
-        int iss_spare[2]
+        int iss_max_send_data_segment_length
+        int iss_spare[3]
 
     cdef struct iscsi_session_add:
         iscsi_session_conf isa_conf
